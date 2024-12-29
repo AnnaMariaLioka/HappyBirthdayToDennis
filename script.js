@@ -14,7 +14,7 @@ let player = {
     color: "blue",
     dy: 0,
     gravity: 0.5,
-    jumpPower: -20,
+    jumpPower: -10,
     onGround: false,
 };
 
