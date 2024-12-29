@@ -63,8 +63,8 @@ class Obstacle {
 // Generate smoothies and obstacles
 function generateItems() {
     for (let i = 200; i < 2000; i += 300) {
-        smoothies.push(new Smoothie(i, canvas.height - 100));
-        obstacles.push(new Obstacle(i + 70, canvas.height - 30));
+        smoothies.push(new Smoothie(i, canvas.height - 150));
+        obstacles.push(new Obstacle(i + 50, canvas.height - 25));
     }
 }
 
