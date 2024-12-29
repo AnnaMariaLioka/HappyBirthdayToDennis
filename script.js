@@ -37,8 +37,8 @@ class Smoothie {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 40;
-        this.height = 40;
+        this.width = 30;
+        this.height = 45;
     }
     draw() {
         ctx.drawImage(smoothieImage, this.x, this.y, this.width, this.height);
@@ -50,9 +50,9 @@ class Obstacle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 50;
-        this.height = 50;
-        this.color = "red";
+        this.width = 20;
+        this.height = 20;
+        this.color = "blue";
     }
     draw() {
         ctx.fillStyle = this.color;
@@ -64,7 +64,7 @@ class Obstacle {
 function generateItems() {
     for (let i = 200; i < 2000; i += 300) {
         smoothies.push(new Smoothie(i, canvas.height - 150));
-        obstacles.push(new Obstacle(i + 50, canvas.height - 25));
+        obstacles.push(new Obstacle(i + 120, canvas.height - 70));
     }
 }
 
