@@ -13,7 +13,7 @@ let player = {
     height: 50,
     color: "blue",
     dy: 0,
-    gravity: 0.5,a,
+    gravity: 0.5,
     jumpPower: -10,
     onGround: false,
 };
