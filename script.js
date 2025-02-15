@@ -1,11 +1,11 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Canvas dimensions
+// Canvas-Dimensionen
 canvas.width = 800;
 canvas.height = 400;
 
-// Game variables
+// Spielvariablen
 let player = {
     x: 50,
     y: canvas.height - 70,
@@ -13,8 +13,8 @@ let player = {
     height: 50,
     color: "blue",
     dy: 0,
-    gravity: 0.5,
-    jumpPower: -10,
+    gravity: 0.4,
+    jumpPower: -8,
     onGround: false,
 };
 
@@ -24,15 +24,19 @@ const obstacles = [];
 let isJumping = false;
 let score = 0;
 let gameOver = false;
+let gameWon = false;
+let gameEnded = false;
+let totalDistance = 4000;
+let distanceTraveled = 0;
 
-// Load images
+// Bilder laden
 const playerImage = new Image();
-playerImage.src = "Images/dennis.png"; // Replace with Dennis' photo later
+playerImage.src = "Images/dennis.png";
 
 const smoothieImage = new Image();
-smoothieImage.src = "Images/smoothie.jpeg"; // Replace with any smoothie icon later
+smoothieImage.src = "Images/smoothie.jpeg";
 
-// Smoothie class
+// Smoothie-Klasse
 class Smoothie {
     constructor(x, y) {
         this.x = x;
@@ -45,7 +49,7 @@ class Smoothie {
     }
 }
 
-// Obstacle class
+// Hindernis-Klasse
 class Obstacle {
     constructor(x, y) {
         this.x = x;
@@ -60,15 +64,21 @@ class Obstacle {
     }
 }
 
-// Generate smoothies and obstacles
+// Smoothies und Hindernisse generieren
 function generateItems() {
-    for (let i = 200; i < 2000; i += 300) {
-        smoothies.push(new Smoothie(i, canvas.height - 150));
-        obstacles.push(new Obstacle(i + 120, canvas.height - 70));
+    let position = 600;
+    while (position < totalDistance) {
+        let smoothieY = canvas.height - 150;
+        smoothies.push(new Smoothie(position, smoothieY));
+
+        let obstacleX = position + 180 + Math.random() * 150;
+        obstacles.push(new Obstacle(obstacleX, canvas.height - 70));
+
+        position += 300 + Math.random() * 250;
     }
 }
 
-// Jump function
+// Sprungfunktion
 function jump() {
     if (player.onGround) {
         player.dy = player.jumpPower;
@@ -76,30 +86,25 @@ function jump() {
     }
 }
 
-// Update game objects
+// Spielobjekte aktualisieren
 function update() {
-    if (gameOver) return;
+    if (gameOver || gameWon || gameEnded) return;
 
-    // Player gravity
+    // Schwerkraft des Spielers
     player.dy += player.gravity;
     player.y += player.dy;
 
-    // Prevent player from falling through the floor
+    // Verhindern, dass der Spieler durch den Boden fällt
     if (player.y + player.height >= canvas.height) {
         player.y = canvas.height - player.height;
         player.onGround = true;
     }
 
-    // Move smoothies and obstacles
-    smoothies.forEach((smoothie) => {
-        smoothie.x -= 2;
-    });
+    // Smoothies und Hindernisse bewegen
+    smoothies.forEach((smoothie) => smoothie.x -= 2);
+    obstacles.forEach((obstacle) => obstacle.x -= 2);
 
-    obstacles.forEach((obstacle) => {
-        obstacle.x -= 2;
-    });
-
-    // Collision detection for smoothies
+    // Kollisionserkennung für Smoothies
     smoothies.forEach((smoothie, index) => {
         if (
             player.x < smoothie.x + smoothie.width &&
@@ -108,11 +113,11 @@ function update() {
             player.y + player.height > smoothie.y
         ) {
             score++;
-            smoothies.splice(index, 1); // Remove smoothie
+            smoothies.splice(index, 1);
         }
     });
 
-    // Collision detection for obstacles
+    // Kollisionserkennung für Hindernisse
     obstacles.forEach((obstacle) => {
         if (
             player.x < obstacle.x + obstacle.width &&
@@ -123,50 +128,82 @@ function update() {
             gameOver = true;
         }
     });
-}
 
-// Draw game objects
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Distanz aktualisieren
+    distanceTraveled += 2;
 
-    // Draw player
-    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
-
-    // Draw smoothies
-    smoothies.forEach((smoothie) => smoothie.draw());
-
-    // Draw obstacles
-    obstacles.forEach((obstacle) => obstacle.draw());
-
-    // Draw score
-    ctx.fillStyle = "black";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${score}`, 10, 30);
-
-    // Game over message
-    if (gameOver) {
-        ctx.fillStyle = "black";
-        ctx.font = "40px Arial";
-        ctx.fillText("Game Over!", canvas.width / 2 - 100, canvas.height / 2);
+    // Überprüfen, ob die Distanz erreicht wurde
+    if (distanceTraveled >= totalDistance) {
+        gameEnded = true;
+        displayHappyBirthdayMessage();
     }
 }
 
-// Game loop
+function displayHappyBirthdayMessage() {
+    ctx.fillStyle = "red";
+    ctx.font = "bold 36px 'Martian Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Happy Birthday, Dennis!", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.font = "bold 24px 'Martian Mono', monospace";
+
+    if (smoothies.length === 0) {
+        ctx.fillText("Mögen all Deine Wünsche und Träume in Erfüllung gehen! <3", canvas.width / 2, canvas.height / 2 + 20);
+    } else {
+        ctx.fillText("Bleib gesund, happy und immer du selbst!", canvas.width / 2, canvas.height / 2 + 20);
+        ctx.font = "18px 'Martian Mono', monospace";
+        ctx.fillText("Alles Liebe, Anna", canvas.width / 2, canvas.height / 2 + 60);
+        //ctx.fillText(`Du hast ${score} von ${score + smoothies.length} Smoothies gesammelt.`, canvas.width / 2, canvas.height / 2 + 50);
+    }
+}
+
+// Spielobjekte zeichnen
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Spieler zeichnen
+    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+
+    // Smoothies zeichnen
+    smoothies.forEach((smoothie) => smoothie.draw());
+
+    // Hindernisse zeichnen
+    obstacles.forEach((obstacle) => obstacle.draw());
+
+    // Punktestand zeichnen
+    ctx.fillStyle = "black";
+    ctx.font = "20px 'Martian Mono', monospace";
+    ctx.fillText(`Score: ${score}`, 10, 30);
+
+    // Game Over-Nachricht
+    if (gameOver) {
+        ctx.fillStyle = "gray";
+        ctx.font = "30px 'Martian Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Ooohh shit! ..Try again ;D", canvas.width / 2, canvas.height / 2);
+    }
+
+    // Happy Birthday-Nachricht anzeigen, wenn das Spiel beendet ist
+    if (gameEnded) {
+        displayHappyBirthdayMessage();
+    }
+}
+
+// Spielschleife
 function gameLoop() {
     update();
     draw();
-    if (!gameOver) {
+    if (!gameOver && !gameWon && !gameEnded) {
         requestAnimationFrame(gameLoop);
     }
 }
 
-// Event listeners
+// Event-Listener
 window.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
         jump();
     }
 });
 
-// Initialize game
+// Spiel initialisieren
 generateItems();
 gameLoop();
